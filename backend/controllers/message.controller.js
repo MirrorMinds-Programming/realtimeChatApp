@@ -1,4 +1,4 @@
-import Conversation from "../models/conversation.model";
+import Conversation from "../models/conversation.model.js";
 
 export const sendMessage = async(req, res) => {
     try {
@@ -29,8 +29,8 @@ export const sendMessage = async(req, res) => {
 
         // SOCKET IO FUNCTİONALİTY
 
-        // await conversation.save();
-        // await newMessage.save(); 
+        await conversation.save();
+        await newMessage.save(); 
 
         // this will run in parallel
         await Promise.all([conversation.save(),newMessage.save()]);
