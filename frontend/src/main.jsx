@@ -4,13 +4,16 @@ import App from './App.jsx'
 import './index.css'
 import {BrowserRouter} from "react-router-dom"
 import { AuthContextProvider } from './context/AuthContext.jsx'
+import { SocketContextProiver } from './context/SocketContext.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-    <AuthContextProvider>
-      <App />
-    </AuthContextProvider>
+      <AuthContextProvider>
+        <SocketContextProiver>
+          <App />
+        </SocketContextProiver>
+      </AuthContextProvider>
     </BrowserRouter>
   </React.StrictMode>,
 )
