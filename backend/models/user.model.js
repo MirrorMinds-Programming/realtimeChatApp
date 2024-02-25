@@ -25,6 +25,18 @@ const userSchema = new mongoose.Schema(
 			type: String,
 			default: "",
 		},
+		friends:[
+			{
+			   type: mongoose.Schema.Types.ObjectId,
+			   default:[],
+			}
+		],
+		friendRequests:[
+			{
+			   type: mongoose.Schema.Types.ObjectId,
+			   default:[],
+			}
+		],
 		// createdAt, updatedAt => Member since <createdAt>
 	},
 	{ timestamps: true }
