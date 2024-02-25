@@ -1,25 +1,22 @@
 import { useState } from "react";
-import useConversation from "../zustand/useConversation";
 import toast from "react-hot-toast";
 
-const useSendMessage = () => {
+const useSendFriendRequest = () => {
 	const [loading, setLoading] = useState(false);
-	const { messages, setMessages, selectedConversation } = useConversation();
 
-	const sendMessage = async (message) => {
+	const sendFriendRequest = async (friendID) => {
 		setLoading(true);
 		try {
-			const res = await fetch(`/api/messages/send/${selectedConversation._id}`, {
+			const res = await fetch(`/api/users/friendRequest`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({ message }),
+				body: JSON.stringify({ friendID }),
 			});
 			const data = await res.json();
 			if (data.error) throw new Error(data.error);
 
-			setMessages([...messages, data]);
 		} catch (error) {
 			toast.error(error.message);
 		} finally {
@@ -27,9 +24,9 @@ const useSendMessage = () => {
 		}
 	};
 
-	return { sendMessage, loading };
+	return { sendFriendRequest, loading };
 };
-export default useSendMessage;
+export default useSendFriendRequest;
 
 /*
 react-hot-toast is a library used for displaying 
