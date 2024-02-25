@@ -1,8 +1,10 @@
 import { useState } from "react";
+import zustandFriendRequests from "../zustand/zustandFriendRequests";
 import toast from "react-hot-toast";
 
 const useSendFriendRequest = () => {
 	const [loading, setLoading] = useState(false);
+	const { requests, setRequests} = zustandFriendRequests();
 
 	const sendFriendRequest = async (friendID) => {
 		setLoading(true);
@@ -16,6 +18,7 @@ const useSendFriendRequest = () => {
 			});
 			const data = await res.json();
 			if (data.error) throw new Error(data.error);
+			setRequests([...requests, data]);
 
 		} catch (error) {
 			toast.error(error.message);

@@ -7,14 +7,18 @@ const User = ({ user, lastIdx }) => {
     const isOnline = onlineUsers.includes(user._id);
 
     // Initialize the useSendFriendRequest hook
-    const sendFriendRequest = useSendFriendRequest();
+    const { sendFriendRequest } = useSendFriendRequest(); // Destructure the function from the hook
 
     // Function to handle the click event of the person add button
-    const handleAddFriend = () => {
-        // Call the sendFriendRequest function with the user ID
-        sendFriendRequest(user._id);
+    const handleAddFriend = async () => { // Make the function asynchronous if needed
+        try {
+            // Call the sendFriendRequest function with the user ID
+            await sendFriendRequest(user._id); // Await if sendFriendRequest returns a promise
+            // Optionally, you can handle success here (e.g., show a success toast)
+        } catch (error) {
+            // Handle errors here (e.g., show an error toast)
+        }
     };
-
     return (
         <div className="flex items-center justify-between py-4 hover:bg-pink-200">
             <div className={`avatar ${isOnline ? "online" : ""}`}>
