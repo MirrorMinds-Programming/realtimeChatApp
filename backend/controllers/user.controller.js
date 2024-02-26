@@ -15,14 +15,26 @@ export const  getContactList = async (req, res) => {
             _id: { $ne: loggedInUserId } // Exclude the logged-in user
         }).select("-password");
 
+		// Find users who are not in the friends list
+        const Me = await User.find({ 
+            _id: loggedInUserId  // Exclude the logged-in user
+        }).select("-password");
+
 		const usersNotInFriendList = filteredUsers.filter(user => {
 			// Return true if the user's ID is not present in the friendsListIDs array
 			return !friendsListIDs.includes(user._id.toString());
 		});
 		
-		res.status(200).json(usersNotInFriendList);
+		// Combine the data into a single object
+        const responseData = {
+            usersNotInFriendList: usersNotInFriendList,
+            Me: Me
+        };
+
+        res.status(200).json(responseData);
+
 	} catch (error) {
-		console.error("Error in getUsersForSidebar: ", error.message);
+		console.error("Error in getContactList: ", error.message);
 		res.status(500).json({ error: "Internal server error" });
 	}
 };
@@ -50,7 +62,6 @@ export const  getUsers = async (req, res) => {
 };
 
 
-
 export const sendFriendRequest = async (req, res) => {
 	try {
 		const { friendID } = req.body;
@@ -58,20 +69,24 @@ export const sendFriendRequest = async (req, res) => {
 
 		const loggedInUserId = req.user._id; //protectRoute sayesinde yapabiliyoruz
 
-		const user = await User.findOne({ _id:friendID });
+		const friend = await User.findOne({ _id:friendID });
+		const me = await User.findOne({ _id:loggedInUserId });
 		
-		if (!user.friendRequests.includes(loggedInUserId)) {
-			user.friendRequests.push(loggedInUserId);
+		if (!friend.friendRequests.includes(loggedInUserId)) {
+			friend.friendRequests.push(loggedInUserId);
+			me.sentRequests.push(friendID);
 		}
 		// Save the updated sender document
-
+ 
 
 		const receiverSocketId = getReceiverSocketId(receiverId);
 		if (receiverSocketId) {
 			// io.to(<socket_id>).emit() used to send events to specific client
-			io.to(receiverSocketId).emit("newFriendRequest", user);
+			io.to(receiverSocketId).emit("newFriendRequest", friend);
+			io.to(req.user.socketId).emit("newFriendRequest", me); // Assuming you have stored the current user's socketId in req.user.socketId
 		}		
-		await user.save();
+
+		await Promise.all([me.save(), friend.save()]);
 
 		//res.status(200).json(filteredUsers);
 	} catch (error) {
@@ -113,14 +128,22 @@ export const deleteFriendRequest = async (req, res) => {
         const loggedInUserId = req.user._id;
 
 		
-		// Update the user document to remove the friendID from the friendRequests array
-		const updatedUser = await User.findByIdAndUpdate(
+		// Update the my document to remove the friendID from the friendRequests array
+		const updatedMe = await User.findByIdAndUpdate(
 			loggedInUserId,
 			{ $pull: { friendRequests: friendID } }, // Use $pull to remove friendID from the array
 			{ new: true } // Return the updated document
         );
 
-        const friendRequestIds = updatedUser.friendRequests;
+		// Update the friend document to remove the friendID from the sentRequests array
+		const updatedFriend = await User.findByIdAndUpdate(
+			friendID,
+			{ $pull: { sentRequests: loggedInUserId } }, // Use $pull to remove friendID from the array
+			{ new: true } // Return the updated document
+        );
+		
+
+        const friendRequestIds = updatedMe.friendRequests;
 
         const friendRequests = await Promise.all(friendRequestIds.map(async (friendId) => {
             const friendUser = await User.findById(friendId);
@@ -150,6 +173,13 @@ export const acceptFriendRequest = async (req, res) => {
 			{ new: true } // Return the updated document
         );
 
+		// Update the friend document to remove the friendID from the sentRequests array
+		const updatedFriend = await User.findByIdAndUpdate(
+			friendID,
+			{ $pull: { sentRequests: loggedInUserId } }, // Use $pull to remove friendID from the array
+			{ new: true } // Return the updated document
+        );
+
         const friendRequestIds = updatedUser.friendRequests;
 
         const friendRequests = await Promise.all(friendRequestIds.map(async (friendId) => {
@@ -161,13 +191,21 @@ export const acceptFriendRequest = async (req, res) => {
 
 		// Add to friends
 		const friendsList = updatedUser.friends;
-
 		const addedUser = await User.findOne({ _id: friendID });
 
 		if (!friendsList.includes(addedUser)) {
 			friendsList.push(addedUser);
 		}
-		await updatedUser.save();
+
+		// Add to friends
+		const friendsList1 = updatedFriend.friends;
+		const addedUser1 = await User.findOne({ _id: loggedInUserId });
+
+		if (!friendsList1.includes(addedUser1)) {
+			friendsList1.push(addedUser1);
+		}
+
+		await Promise.all([updatedFriend.save(), updatedUser.save()]);
 
         res.status(200).json(friendRequests);
     } catch (error) {
