@@ -21,12 +21,11 @@ export const sendFriendRequest = async (req, res) => {
 
 		const loggedInUserId = req.user._id; //protectRoute sayesinde yapabiliyoruz
 
-		console.log("friend id :", friendID);
-	    console.log("loggedInUserId :", loggedInUserId);
-		
 		const user = await User.findOne({ _id:friendID });
 		
-		user.friendRequests.push(loggedInUserId);
+		if (!user.friendRequests.includes(loggedInUserId)) {
+			user.friendRequests.push(loggedInUserId);
+		}
 		// Save the updated sender document
 
 
@@ -71,12 +70,12 @@ export const getFriendRequest = async (req, res) => {
 
 export const deleteFriendRequest = async (req, res) => {
     try {
-		//console.log("in backenddd");
+		
 		const { friendID } = req.body;
 		const { id: receiverId } = req.params;
         const loggedInUserId = req.user._id;
 
-		console.log(friendID);
+		
 		// Update the user document to remove the friendID from the friendRequests array
 		const updatedUser = await User.findByIdAndUpdate(
 			loggedInUserId,

@@ -18,12 +18,15 @@ const FriendRequests = () => {
         <div className='py-2 flex flex-col overflow-auto'>
             {!loading && requests && requests.map((user, idx) => (
 				
-				<div key={user.user._id}>
-                <User
-                    user={user.user}
-                    lastIdx={idx === requests.length - 1}
-                />
-				</div>
+                // Add a null check for the user object
+                user.user && (
+                <div key={user.user._id}>
+                    <User
+                        user={user.user}
+                        lastIdx={idx === requests.length - 1}
+                    />
+                </div>
+                )
             ))}
 
             {loading && <span className='loading loading-spinner mx-auto'></span>}
@@ -34,29 +37,30 @@ export default FriendRequests;
 
 
 const User = ({ user, lastIdx }) => {
-    const { deleteFriendReqs } = useDeleteFriendRequests();
+    const { deleteFriendRequests } = useDeleteFriendRequests();
     
     const { onlineUsers } = useSocketContext();
     const isOnline = onlineUsers.includes(user._id);
 
-	const HandleDeleteFriend = async () => { // Make the function asynchronous if needed
+	const handleDeleteFriend = async () => { // Make the function asynchronous if needed
         try {
             // Call the sendFriendRequest function with the user ID
-            console.log(user._id);
-            await deleteFriendReqs(user._id); // Await if sendFriendRequest returns a promise
+            console.log("hereeee");
+            await deleteFriendRequests(user._id); // Await if sendFriendRequest returns a promise
+            console.log('Friend request deleted for user:', user._id);
             // Optionally, you can handle success here (e.g., show a success toast)
         } catch (error) {
-            // Handle errors here (e.g., show an error toast)
+            console.error('Error deleting friend request:', error.message);
         }
     };
     
     const HandleAcceptFriend = async () => { // Make the function asynchronous if needed
         try {
             // Call the sendFriendRequest function with the user ID
-            await deleteFriendReqs(user._id); // Await if sendFriendRequest returns a promise
+            await deleteFriendRequests(user._id); // Await if sendFriendRequest returns a promise
             // Optionally, you can handle success here (e.g., show a success toast)
         } catch (error) {
-            // Handle errors here (e.g., show an error toast)
+            console.error('Error adding friend request:', error.message);
         }
     };
     
@@ -71,7 +75,7 @@ const User = ({ user, lastIdx }) => {
             <div className="flex flex-1 items-center justify-between ml-10">
                 <p className="font-bold text-black-200">{user.fullName}</p>
                 <div className="flex">
-                    <MdCancel className="mr-3 w-7 h-7 text-black cursor-pointer transition duration-300 ease-in-out transform hover:scale-110" onClick={HandleDeleteFriend}/>
+                    <MdCancel className="mr-3 w-7 h-7 text-black cursor-pointer transition duration-300 ease-in-out transform hover:scale-110" onClick={handleDeleteFriend}/>
                     <IoIosCheckmarkCircle className="mr-7 w-7 h-7 text-black cursor-pointer transition duration-300 ease-in-out transform hover:scale-110" onClick={HandleAcceptFriend}/>
                 </div>
             </div>
