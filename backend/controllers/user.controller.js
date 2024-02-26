@@ -160,6 +160,7 @@ export const deleteFriendRequest = async (req, res) => {
 };
 
 
+
 export const acceptFriendRequest = async (req, res) => {
     try {
 		const { friendID } = req.body;
@@ -212,4 +213,32 @@ export const acceptFriendRequest = async (req, res) => {
         console.error("Error in getFriendRequest: ", error.message);
         res.status(500).json({ error: "Internal server error" });
     }
+};
+
+
+
+export const  getNumFriendRequests = async (req, res) => {
+	try {
+		const loggedInUserId = req.user._id; //protectRoute sayesinde yapabiliyoruz
+		const { id: receiverId } = req.params;
+		
+		
+		const me = await User.findOne({ _id:loggedInUserId });
+        const friendsListObjects = req.user.friendRequests;
+		const lengthOfArray = friendsListObjects.length;
+        res.status(200).json(lengthOfArray);
+
+
+		const receiverSocketId = getReceiverSocketId(receiverId);
+		if (receiverSocketId) {
+			// io.to(<socket_id>).emit() used to send events to specific client
+			io.to(req.user.socketId).emit("getNumFriendRequests", me); // Assuming you have stored the current user's socketId in req.user.socketId
+		}		
+
+
+
+	} catch (error) {
+		console.error("Error in getNumFriendRequests: ", error.message);
+		res.status(500).json({ error: "Internal server error" });
+	}
 };
