@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useSocketContext } from "../../context/SocketContext";
 import useGetFriendRequests from "../../hooks/useGetFriendRequests";
 import useDeleteFriendRequests from "../../hooks/useDeleteFriendReq";
+import useAcceptFriendRequests from "../../hooks/useAcceptFriendReq";
 import useListenFriendRequests from "../../hooks/useListenFriendRequests";
 import { MdCancel } from "react-icons/md";
 import { IoIosCheckmarkCircle } from "react-icons/io";
@@ -38,6 +39,7 @@ export default FriendRequests;
 
 const User = ({ user, lastIdx }) => {
     const { deleteFriendRequests } = useDeleteFriendRequests();
+    const { acceptFriendRequests } = useAcceptFriendRequests();
     
     const { onlineUsers } = useSocketContext();
     const isOnline = onlineUsers.includes(user._id);
@@ -45,7 +47,7 @@ const User = ({ user, lastIdx }) => {
 	const handleDeleteFriend = async () => { // Make the function asynchronous if needed
         try {
             // Call the sendFriendRequest function with the user ID
-            console.log("hereeee");
+            
             await deleteFriendRequests(user._id); // Await if sendFriendRequest returns a promise
             console.log('Friend request deleted for user:', user._id);
             // Optionally, you can handle success here (e.g., show a success toast)
@@ -54,10 +56,11 @@ const User = ({ user, lastIdx }) => {
         }
     };
     
-    const HandleAcceptFriend = async () => { // Make the function asynchronous if needed
+    const handleAcceptFriend = async () => { // Make the function asynchronous if needed
         try {
             // Call the sendFriendRequest function with the user ID
-            await deleteFriendRequests(user._id); // Await if sendFriendRequest returns a promise
+            await acceptFriendRequests(user._id); // Await if sendFriendRequest returns a promise
+            console.log('Friend request accepted for user:', user._id);
             // Optionally, you can handle success here (e.g., show a success toast)
         } catch (error) {
             console.error('Error adding friend request:', error.message);
@@ -76,7 +79,7 @@ const User = ({ user, lastIdx }) => {
                 <p className="font-bold text-black-200">{user.fullName}</p>
                 <div className="flex">
                     <MdCancel className="mr-3 w-7 h-7 text-black cursor-pointer transition duration-300 ease-in-out transform hover:scale-110" onClick={handleDeleteFriend}/>
-                    <IoIosCheckmarkCircle className="mr-7 w-7 h-7 text-black cursor-pointer transition duration-300 ease-in-out transform hover:scale-110" onClick={HandleAcceptFriend}/>
+                    <IoIosCheckmarkCircle className="mr-7 w-7 h-7 text-black cursor-pointer transition duration-300 ease-in-out transform hover:scale-110" onClick={handleAcceptFriend}/>
                 </div>
             </div>
 

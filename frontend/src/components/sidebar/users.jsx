@@ -1,8 +1,8 @@
-import useGetConversations from "../../hooks/useGetConversations";
+import useGetContactList from "../../hooks/useGetContactList";
 import User from "./user.jsx";
 
 const AllUsers = () => {
-	const { loading, conversations } = useGetConversations();
+	const { loading, conversations } = useGetContactList();
 
 	return (
 		<div className='py-2 flex flex-col overflow-auto'>
